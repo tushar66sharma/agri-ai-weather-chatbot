@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+:root{
+  --accent: #10b981; /* emerald */
+  --muted: #6b7280;
+}
+
+html,body,#root{
+  height:100%;
+}
+
+body{
+  font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  color: #0f172a;
+}
+
+/* subtle card look */
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(2,6,23,0.06);
+}
+
+/* small helper for muted text */
+.muted { color: var(--muted); }
+
+/* animated listening dots */
+.listening-dots span{
+  display:inline-block;
+  width:6px;
+  height:6px;
+  margin-right:4px;
+  background: var(--accent);
+  border-radius:9999px;
+  animation: listening 900ms infinite ease-in-out;
+}
+.listening-dots span:nth-child(2){ animation-delay: 120ms;}
+.listening-dots span:nth-child(3){ animation-delay: 240ms;}
+@keyframes listening {
+  0%, 60%, 100% { transform: translateY(0); opacity: .5; }
+  30% { transform: translateY(-6px); opacity: 1; }
+}

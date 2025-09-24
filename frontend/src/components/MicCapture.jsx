@@ -1,0 +1,75 @@
+// frontend/components/MicCapture.jsx
+import React, { useEffect, useRef, useState } from 'react';
+
+export default function MicCapture({ onTranscript, onFinal, language = 'ja' }) {
+  const [listening, setListening] = useState(false);
+  const [supported, setSupported] = useState(true);
+  const recognitionRef = useRef(null);
+
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) { setSupported(false); return; }
+
+    const r = new SpeechRecognition();
+    const langMap = { ja: 'ja-JP', en: 'en-US', hi: 'hi-IN' };
+    r.lang = langMap[language] || 'ja-JP';
+    r.interimResults = true;
+    r.continuous = false;
+
+    let finalTranscript = '';
+
+    r.onstart = () => { finalTranscript = ''; setListening(true); if (onTranscript) onTranscript(''); };
+
+    r.onresult = (e) => {
+      let interim = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const t = e.results[i][0].transcript;
+        if (e.results[i].isFinal) finalTranscript += t;
+        else interim += t;
+      }
+      const composed = (finalTranscript + interim).trim();
+      if (onTranscript) onTranscript(composed);
+    };
+
+    r.onend = () => {
+      setListening(false);
+      const finalText = (finalTranscript || '').trim();
+      if (onFinal) onFinal(finalText);
+      if (onTranscript) onTranscript(finalText);
+      finalTranscript = '';
+    };
+
+    r.onerror = (ev) => {
+      console.error('SpeechRecognition error', ev);
+      setListening(false);
+      const finalText = (finalTranscript || '').trim();
+      if (onFinal) onFinal(finalText);
+      if (onTranscript) onTranscript(finalText);
+      finalTranscript = '';
+    };
+
+    recognitionRef.current = r;
+    return () => { try { recognitionRef.current?.stop(); } catch(e) {} };
+  }, [language, onTranscript, onFinal]);
+
+  const startStop = () => {
+    const r = recognitionRef.current; if (!r) return;
+    if (listening) { try { r.stop(); } catch(e){console.warn(e);} setListening(false); return; }
+    try { r.start(); } catch(err) { console.warn('start failed', err); alert('Mic failed — allow microphone'); }
+  };
+
+  if (!supported) return <div className="text-sm text-red-600">Speech recognition not supported — use Chrome.</div>;
+
+  const label = listening ? (language === 'ja'? '録音中 — 停止' : (language === 'hi' ? 'रिकॉर्डिंग — रोकें' : 'Recording — Stop')) :
+                            (language === 'ja' ? 'マイクをオン (日本語)' : (language === 'hi' ? 'माइक चालू करें (हिंदी)' : 'Mic On (English)'));
+
+  return (
+    <div className="flex items-center gap-3">
+      <button onClick={startStop} className={`px-4 py-2 rounded-lg font-medium ${listening ? 'bg-red-500 text-white' : 'bg-blue-600 text-white'}`}>{label}</button>
+      <div className="text-sm muted flex items-center gap-3">
+        <div>{listening ? <span className="listening-dots"><span></span><span></span><span></span></span> : null}</div>
+        <div>{listening ? (language === 'ja' ? '録音中...' : (language === 'hi' ? 'रिकॉर्ड कर रहा है...' : 'Listening...')) : `Click to speak (${language})`}</div>
+      </div>
+    </div>
+  );
+}
