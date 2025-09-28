@@ -1,4 +1,3 @@
-// frontend/components/MicCapture.jsx
 import React, { useEffect, useRef, useState } from 'react';
 
 export default function MicCapture({ onTranscript, onFinal, language = 'ja' }) {
@@ -60,15 +59,33 @@ export default function MicCapture({ onTranscript, onFinal, language = 'ja' }) {
 
   if (!supported) return <div className="text-sm text-red-600">Speech recognition not supported — use Chrome.</div>;
 
-  const label = listening ? (language === 'ja'? '録音中 — 停止' : (language === 'hi' ? 'रिकॉर्डिंग — रोकें' : 'Recording — Stop')) :
-                            (language === 'ja' ? 'マイクをオン (日本語)' : (language === 'hi' ? 'माइक चालू करें (हिंदी)' : 'Mic On (English)'));
+  const label = listening
+    ? (language === 'ja'? '録音中 — 停止' : (language === 'hi' ? 'रिकॉर्डिंग — रोकें' : 'Recording — Stop'))
+    : (language === 'ja' ? 'マイクをオン (日本語)' : (language === 'hi' ? 'माइक चालू करें (हिंदी)' : 'Mic On (English)'));
 
   return (
     <div className="flex items-center gap-3">
-      <button onClick={startStop} className={`px-4 py-2 rounded-lg font-medium ${listening ? 'bg-red-500 text-white' : 'bg-blue-600 text-white'}`}>{label}</button>
-      <div className="text-sm muted flex items-center gap-3">
-        <div>{listening ? <span className="listening-dots"><span></span><span></span><span></span></span> : null}</div>
-        <div>{listening ? (language === 'ja' ? '録音中...' : (language === 'hi' ? 'रिकॉर्ड कर रहा है...' : 'Listening...')) : `Click to speak (${language})`}</div>
+      <button
+        onClick={startStop}
+        className={`px-4 py-2 rounded-lg font-medium shadow-sm transition-colors duration-150 focus:outline-none ${
+          listening ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-blue-600 text-white hover:bg-blue-700'
+        }`}
+        aria-pressed={listening}
+      >
+        {label}
+      </button>
+
+      <div className="text-sm text-gray-600 flex items-center gap-3">
+        <div className="min-w-[48px]">
+          {listening ? (
+            <span aria-hidden className="flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full animate-pulse bg-white/90 shadow"></span>
+              <span className="text-xs">Listening</span>
+            </span>
+          ) : (
+            <span className="text-xs muted">Click to speak ({language})</span>
+          )}
+        </div>
       </div>
     </div>
   );
